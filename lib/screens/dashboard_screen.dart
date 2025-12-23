@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:vure_dashboard/screens/login_screen.dart';
 import 'package:vure_dashboard/widgets/animated_action_button.dart';
 import 'package:vure_dashboard/widgets/animated_appbar_chip.dart';
 import 'package:vure_dashboard/widgets/animated_filter_chip.dart';
@@ -246,104 +247,162 @@ class _DashboardScreenState extends State<DashboardScreen>
   /* ================= TABLE ================= */
 
   Widget tableWidget() {
-    return AnimatedTableContainer(
-      child: DataTable(
-        headingTextStyle: const TextStyle(color: Colors.white),
-        dataTextStyle: const TextStyle(color: Colors.white),
-        columns: const [
-          DataColumn(label: Text("الكود")),
-          DataColumn(label: Text("الاسم")),
-          DataColumn(label: Text("HWID")),
-          DataColumn(label: Text("الحالة")),
-          DataColumn(label: Text("المدة")),
-          DataColumn(label: Text("الإجراءات")),
-        ],
-        rows: filtered.map<DataRow>((k) {
-          return DataRow(cells: [
-            DataCell(Text(safe(k["key"]))),
-            DataCell(Text(safe(k["name"]))),
-            DataCell(Text(safe(k["hwid"]))),
-            DataCell(StatusBadge(safe(k["status"]))),
-            DataCell(Text(safe(k["remaining"]))),
-            DataCell(Row(
-              children: [
-                AnimatedActionButton(
-                  text: "Reset HWID",
-                  type: ActionType.reset,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => ResetConfirmDialog(
-                        keyValue: k["key"],
-                        onConfirm: () async {
-                          await ApiClient.resetKey(k["key"]);
-                          fetch();
-                          showDialog(
-                            context: context,
-                            builder: (_) => SuccessDialog(
-                              title: "تمت العملية",
-                              message:
-                                  "تم إعادة تعيين HWID للكود:\n${k["key"]}",
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: AnimatedTableContainer(
+          child: DataTable(
+            columnSpacing: 24,
+            headingTextStyle: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+            dataTextStyle: const TextStyle(color: Colors.white),
+            columns: const [
+              DataColumn(label: Text("الكود")),
+              DataColumn(label: Text("الاسم")),
+              DataColumn(label: Text("HWID")),
+              DataColumn(label: Text("الحالة")),
+              DataColumn(label: Text("المدة")),
+              DataColumn(label: Text("الإجراءات")),
+            ],
+            rows: filtered.map<DataRow>((k) {
+              return DataRow(cells: [
+                /// الكود
+                DataCell(
+                  SizedBox(
+                    width: 180,
+                    child: Text(
+                      safe(k["key"]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 8),
-                AnimatedActionButton(
-                  text: "+ أيام",
-                  type: ActionType.extend,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => ExtendDaysDialog(
-                        keyValue: k["key"],
-                        onConfirm: (days) async {
-                          await ApiClient.extendKey(k["key"], int.parse(days));
-                          fetch();
-                          showDialog(
-                            context: context,
-                            builder: (_) => SuccessDialog(
-                              title: "تمت الإضافة",
-                              message:
-                                  "تم إضافة $days أيام للكود:\n${k["key"]}",
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+
+                /// الاسم
+                DataCell(
+                  SizedBox(
+                    width: 120,
+                    child: Text(
+                      safe(k["name"]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 8),
-                AnimatedActionButton(
-                  text: "حذف",
-                  type: ActionType.delete,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (_) => DeleteConfirmDialog(
-                        keyValue: k["key"],
-                        onConfirm: () async {
-                          await ApiClient.deleteKey(k["key"]);
-                          fetch();
-                          showDialog(
-                            context: context,
-                            builder: (_) => SuccessDialog(
-                              title: "تم الحذف",
-                              message: "تم حذف الكود:\n${k["key"]}",
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+
+                /// HWID
+                DataCell(
+                  SizedBox(
+                    width: 260,
+                    child: Text(
+                      safe(k["hwid"]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
-              ],
-            )),
-          ]);
-        }).toList(),
+
+                /// الحالة
+                DataCell(
+                  StatusBadge(safe(k["status"])),
+                ),
+
+                /// المدة
+                DataCell(
+                  SizedBox(
+                    width: 100,
+                    child: Text(safe(k["remaining"])),
+                  ),
+                ),
+
+                /// الإجراءات (محفوظة كما هي)
+                DataCell(
+                  SizedBox(
+                    width: 340,
+                    child: Row(
+                      children: [
+                        AnimatedActionButton(
+                          text: "Reset HWID",
+                          type: ActionType.reset,
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => ResetConfirmDialog(
+                                keyValue: k["key"],
+                                onConfirm: () async {
+                                  await ApiClient.resetKey(k["key"]);
+                                  fetch();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => SuccessDialog(
+                                      title: "تمت العملية",
+                                      message:
+                                          "تم إعادة تعيين HWID للكود:\n${k["key"]}",
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        AnimatedActionButton(
+                          text: "+ أيام",
+                          type: ActionType.extend,
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => ExtendDaysDialog(
+                                keyValue: k["key"],
+                                onConfirm: (days) async {
+                                  await ApiClient.extendKey(
+                                      k["key"], int.parse(days));
+                                  fetch();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => SuccessDialog(
+                                      title: "تمت الإضافة",
+                                      message:
+                                          "تم إضافة $days أيام للكود:\n${k["key"]}",
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        AnimatedActionButton(
+                          text: "حذف",
+                          type: ActionType.delete,
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (_) => DeleteConfirmDialog(
+                                keyValue: k["key"],
+                                onConfirm: () async {
+                                  await ApiClient.deleteKey(k["key"]);
+                                  fetch();
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) => SuccessDialog(
+                                      title: "تم الحذف",
+                                      message: "تم حذف الكود:\n${k["key"]}",
+                                    ),
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ]);
+            }).toList(),
+          ),
+        ),
       ),
     );
   }
@@ -410,9 +469,11 @@ class _DashboardScreenState extends State<DashboardScreen>
                       ],
                       onTap: () async {
                         await ApiClient.logout();
-                        Navigator.of(context).pushNamedAndRemoveUntil(
-                          "/login",
-                          (route) => false,
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => LoginScreen(),
+                          ),
                         );
                       },
                     ),
